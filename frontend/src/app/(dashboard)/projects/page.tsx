@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Users } from 'lucide-react';
 import { CreateProjectDialog } from '@/features/projects/components/CreateProjectDialog';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppStore';
 import { fetchProjects } from '@/store/slices/projectsSlice';
@@ -18,9 +17,9 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[#172b4d]">Projetos</h1>
+          <h1 className="text-xl font-bold text-[#172b4d] sm:text-2xl">Projetos</h1>
           <p className="text-sm text-[#6b778c]">Gerencie todos os seus projetos</p>
         </div>
         <CreateProjectDialog />
@@ -29,17 +28,17 @@ export default function ProjectsPage() {
       {loading ? (
         <p className="text-sm text-[#6b778c]">Carregando...</p>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-[#dfe1e6] bg-white py-16">
+        <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-[#dfe1e6] bg-white py-12 sm:py-16">
           <p className="mb-4 text-sm text-[#6b778c]">Nenhum projeto encontrado</p>
           <CreateProjectDialog />
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {projects.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="group rounded-sm border border-[#dfe1e6] bg-white p-5 transition-shadow hover:shadow-md"
+              className="group rounded-sm border border-[#dfe1e6] bg-white p-4 transition-shadow hover:shadow-md sm:p-5"
             >
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#deebff] text-sm font-bold text-[#0052cc]">

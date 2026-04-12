@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
+import { Plus, Paperclip, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,25 +29,47 @@ export function CreateTaskDialog({ projectId, members, onCreated }: CreateTaskDi
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [assigneeId, setAssigneeId] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files;
+    if (selected) {
+      setFiles((prev) => [...prev, ...Array.from(selected)]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await taskService.create({
+      const res = await taskService.create({
         title,
         description: description || undefined,
         projectId,
         priority,
         assigneeId: assigneeId || undefined,
       });
+
+      const taskId = res.data.data.id;
+
+      for (const file of files) {
+        await taskService.uploadAttachment(taskId, file);
+      }
+
       toast.success('Tarefa criada com sucesso!');
       setTitle('');
       setDescription('');
       setPriority(TaskPriority.MEDIUM);
       setAssigneeId('');
+      setFiles([]);
       setOpen(false);
       onCreated();
     } catch {
@@ -88,7 +110,7 @@ export function CreateTaskDialog({ projectId, members, onCreated }: CreateTaskDi
               rows={3}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="task-priority">Prioridade</Label>
               <select
@@ -120,6 +142,47 @@ export function CreateTaskDialog({ projectId, members, onCreated }: CreateTaskDi
               </select>
             </div>
           </div>
+
+          {/* File attachments */}
+          <div className="space-y-2">
+            <Label>Anexos</Label>
+            <div className="space-y-2">
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between rounded-sm border border-[#dfe1e6] bg-[#f4f5f7] px-3 py-1.5"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#6b778c]" />
+                    <span className="truncate text-xs text-[#172b4d]">{file.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(index)}
+                    className="shrink-0 rounded p-0.5 text-[#6b778c] hover:text-[#de350b]"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleAddFile}
+                className="hidden"
+                multiple
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 rounded-sm border border-dashed border-[#dfe1e6] px-3 py-1.5 text-xs text-[#6b778c] hover:border-[#4c9aff] hover:text-[#0052cc]"
+              >
+                <Paperclip className="h-3.5 w-3.5" />
+                Adicionar arquivo
+              </button>
+            </div>
+          </div>
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar

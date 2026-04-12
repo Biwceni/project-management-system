@@ -26,17 +26,17 @@ export const projectService = {
   removeMember(projectId: string, memberId: string) {
     return api.delete(`/projects/${projectId}/members/${memberId}`);
   },
-  getAttachments(projectId: string) {
-    return api.get(`/projects/${projectId}/attachments`);
+  getDocuments(projectId: string) {
+    return api.get(`/projects/${projectId}/documents`);
   },
-  uploadAttachment(projectId: string, file: File) {
+  uploadDocument(projectId: string, file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/projects/${projectId}/attachments`, formData, {
+    return api.post(`/projects/${projectId}/documents`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  deleteAttachment(projectId: string, attachmentId: string) {
-    return api.delete(`/projects/${projectId}/attachments/${attachmentId}`);
+  deleteDocument(projectId: string, documentId: string) {
+    return api.delete(`/projects/${projectId}/documents/${documentId}`);
   },
 };

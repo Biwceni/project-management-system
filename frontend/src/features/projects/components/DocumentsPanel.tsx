@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { Upload, Trash2, FileText, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { projectService } from '../services/projectService';
-import { Attachment } from '@/types';
+import { Document } from '@/types';
 
-interface AttachmentsPanelProps {
+interface DocumentsPanelProps {
   projectId: string;
 }
 
@@ -17,22 +17,20 @@ function formatFileSize(bytes: number) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-export function AttachmentsPanel({ projectId }: AttachmentsPanelProps) {
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    loadAttachments();
+    loadDocuments();
   }, [projectId]);
 
-  const loadAttachments = async () => {
+  const loadDocuments = async () => {
     try {
-      const res = await projectService.getAttachments(projectId);
-      setAttachments(res.data.data || []);
-    } catch {
-      /* ignore */
-    }
+      const res = await projectService.getDocuments(projectId);
+      setDocuments(res.data.data || []);
+    } catch { /* ignore */ }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,34 +38,35 @@ export function AttachmentsPanel({ projectId }: AttachmentsPanelProps) {
     if (!file) return;
     setUploading(true);
     try {
-      await projectService.uploadAttachment(projectId, file);
-      toast.success('Arquivo enviado!');
-      loadAttachments();
+      await projectService.uploadDocument(projectId, file);
+      toast.success('Documento enviado!');
+      loadDocuments();
     } catch {
-      toast.error('Erro ao enviar arquivo');
+      toast.error('Erro ao enviar documento');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleDelete = async (attachmentId: string) => {
-    if (!confirm('Excluir este arquivo?')) return;
+  const handleDelete = async (documentId: string) => {
+    if (!confirm('Excluir este documento?')) return;
     try {
-      await projectService.deleteAttachment(projectId, attachmentId);
-      toast.success('Arquivo excluído');
-      loadAttachments();
+      await projectService.deleteDocument(projectId, documentId);
+      toast.success('Documento excluído');
+      loadDocuments();
     } catch {
-      toast.error('Erro ao excluir arquivo');
+      toast.error('Erro ao excluir documento');
     }
   };
 
   return (
-    <div className="max-w-lg space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-2">
         <input
           ref={fileInputRef}
           type="file"
+          accept=".pdf,.doc,.docx"
           onChange={handleUpload}
           className="hidden"
         />
@@ -77,36 +76,39 @@ export function AttachmentsPanel({ projectId }: AttachmentsPanelProps) {
           disabled={uploading}
         >
           <Upload className="mr-1 h-4 w-4" />
-          {uploading ? 'Enviando...' : 'Upload'}
+          {uploading ? 'Enviando...' : 'Enviar Documento'}
         </Button>
+        <span className="text-xs text-[#6b778c]">PDF, Word</span>
       </div>
 
       <div className="rounded-sm border border-[#dfe1e6] bg-white">
-        {attachments.length === 0 ? (
+        {documents.length === 0 ? (
           <p className="p-5 text-center text-sm text-[#6b778c]">
-            Nenhum arquivo anexado
+            Nenhum documento adicionado
           </p>
         ) : (
-          attachments.map((att) => (
+          documents.map((doc) => (
             <div
-              key={att.id}
-              className="flex items-center justify-between border-b border-[#dfe1e6] px-4 py-3 last:border-b-0"
+              key={doc.id}
+              className="flex items-center justify-between border-b border-[#dfe1e6] px-3 py-3 last:border-b-0 sm:px-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded bg-[#deebff]">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-[#deebff]">
                   <FileText className="h-4 w-4 text-[#0052cc]" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-[#172b4d]">{att.fileName}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-[#172b4d]">{doc.fileName}</p>
                   <p className="text-xs text-[#6b778c]">
-                    {formatFileSize(att.fileSize)} &middot;{' '}
-                    {new Date(att.createdAt).toLocaleDateString('pt-BR')}
+                    {formatFileSize(doc.fileSize)}
+                    <span className="hidden sm:inline">
+                      {' '}&middot; {new Date(doc.createdAt).toLocaleDateString('pt-BR')}
+                    </span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1 ml-2">
                 <a
-                  href={att.fileUrl}
+                  href={doc.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded p-1 text-[#6b778c] hover:text-[#0052cc]"
@@ -114,7 +116,7 @@ export function AttachmentsPanel({ projectId }: AttachmentsPanelProps) {
                   <Download className="h-4 w-4" />
                 </a>
                 <button
-                  onClick={() => handleDelete(att.id)}
+                  onClick={() => handleDelete(doc.id)}
                   className="rounded p-1 text-[#6b778c] hover:text-[#de350b]"
                 >
                   <Trash2 className="h-4 w-4" />

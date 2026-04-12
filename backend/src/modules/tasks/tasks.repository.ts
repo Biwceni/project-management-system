@@ -16,7 +16,7 @@ export class TasksRepository {
       where,
       include: {
         assignee: { select: { id: true, name: true, email: true } },
-        _count: { select: { comments: true } },
+        _count: { select: { comments: true, attachments: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -34,6 +34,7 @@ export class TasksRepository {
           include: { user: { select: { id: true, name: true, email: true } } },
           orderBy: { createdAt: 'asc' },
         },
+        attachments: { orderBy: { createdAt: 'desc' } },
       },
     });
   }

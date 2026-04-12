@@ -40,4 +40,17 @@ export const taskService = {
   deleteComment(taskId: string, commentId: string) {
     return api.delete(`/tasks/${taskId}/comments/${commentId}`);
   },
+  getAttachments(taskId: string) {
+    return api.get(`/tasks/${taskId}/attachments`);
+  },
+  uploadAttachment(taskId: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/tasks/${taskId}/attachments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  deleteAttachment(taskId: string, attachmentId: string) {
+    return api.delete(`/tasks/${taskId}/attachments/${attachmentId}`);
+  },
 };

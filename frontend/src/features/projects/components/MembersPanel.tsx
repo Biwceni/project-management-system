@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { UserPlus, Trash2, Crown } from 'lucide-react';
+import { UserPlus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { projectService } from '../services/projectService';
@@ -51,9 +51,9 @@ export function MembersPanel({ projectId, members, ownerId, onUpdated }: Members
   };
 
   return (
-    <div className="max-w-lg space-y-4">
+    <div className="space-y-4">
       {isOwner && (
-        <form onSubmit={handleAddMember} className="flex gap-2">
+        <form onSubmit={handleAddMember} className="flex flex-col gap-2 sm:flex-row">
           <Input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -61,7 +61,7 @@ export function MembersPanel({ projectId, members, ownerId, onUpdated }: Members
             type="email"
             className="flex-1"
           />
-          <Button type="submit" disabled={loading} size="sm">
+          <Button type="submit" disabled={loading} size="sm" className="w-full sm:w-auto">
             <UserPlus className="mr-1 h-4 w-4" />
             {loading ? 'Adicionando...' : 'Adicionar'}
           </Button>
@@ -77,19 +77,19 @@ export function MembersPanel({ projectId, members, ownerId, onUpdated }: Members
           members.map((member) => (
             <div
               key={member.id}
-              className="flex items-center justify-between border-b border-[#dfe1e6] px-4 py-3 last:border-b-0"
+              className="flex items-center justify-between border-b border-[#dfe1e6] px-3 py-3 last:border-b-0 sm:px-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0052cc] text-xs font-bold text-white">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0052cc] text-xs font-bold text-white">
                   {member.user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-[#172b4d]">{member.user.name}</p>
-                  <p className="text-xs text-[#6b778c]">{member.user.email}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-[#172b4d]">{member.user.name}</p>
+                  <p className="truncate text-xs text-[#6b778c]">{member.user.email}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-[#f4f5f7] px-2 py-0.5 text-xs font-medium text-[#6b778c]">
+              <div className="flex shrink-0 items-center gap-2 ml-2">
+                <span className="hidden rounded bg-[#f4f5f7] px-2 py-0.5 text-xs font-medium text-[#6b778c] sm:inline">
                   {member.role}
                 </span>
                 {isOwner && (

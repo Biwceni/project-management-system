@@ -5,7 +5,6 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 @Injectable()
 export class StorageService {
   private supabase: SupabaseClient;
-  private bucket = 'project-files';
 
   constructor(private readonly config: ConfigService) {
     const url = this.config.get<string>('SUPABASE_URL');
@@ -14,9 +13,9 @@ export class StorageService {
     this.supabase = createClient(url, key);
   }
 
-  async upload(file: Express.Multer.File, path: string) {
+  async upload(bucket: string, file: Express.Multer.File, path: string) {
     const { data, error } = await this.supabase.storage
-      .from(this.bucket)
+      .from(bucket)
       .upload(path, file.buffer, {
         contentType: file.mimetype,
         upsert: false,
@@ -25,15 +24,32 @@ export class StorageService {
     if (error) throw new Error(error.message);
 
     const { data: urlData } = this.supabase.storage
-      .from(this.bucket)
+      .from(bucket)
       .getPublicUrl(data.path);
 
     return urlData.publicUrl;
   }
 
-  async remove(path: string) {
+  async upsert(bucket: string, file: Express.Multer.File, path: string) {
+    const { data, error } = await this.supabase.storage
+      .from(bucket)
+      .upload(path, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (error) throw new Error(error.message);
+
+    const { data: urlData } = this.supabase.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
+  }
+
+  async remove(bucket: string, path: string) {
     const { error } = await this.supabase.storage
-      .from(this.bucket)
+      .from(bucket)
       .remove([path]);
 
     if (error) throw new Error(error.message);

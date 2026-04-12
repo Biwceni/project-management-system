@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  avatarUrl: string | null;
   createdAt: string;
 }
 
@@ -12,9 +13,10 @@ export interface Project {
   key: string;
   ownerId: string;
   createdAt: string;
-  owner?: Pick<User, 'id' | 'name' | 'email'>;
+  owner?: Pick<User, 'id' | 'name' | 'email' | 'avatarUrl'>;
   members?: ProjectMember[];
   tasks?: Task[];
+  documents?: Document[];
   _count?: { tasks: number; members: number };
 }
 
@@ -24,7 +26,7 @@ export interface ProjectMember {
   userId: string;
   role: MemberRole;
   createdAt: string;
-  user: Pick<User, 'id' | 'name' | 'email'>;
+  user: Pick<User, 'id' | 'name' | 'email' | 'avatarUrl'>;
 }
 
 export interface Task {
@@ -36,10 +38,11 @@ export interface Task {
   projectId: string;
   assigneeId: string | null;
   createdAt: string;
-  assignee?: Pick<User, 'id' | 'name' | 'email'> | null;
+  assignee?: Pick<User, 'id' | 'name' | 'email' | 'avatarUrl'> | null;
   project?: Pick<Project, 'id' | 'name' | 'ownerId'>;
   comments?: Comment[];
-  _count?: { comments: number };
+  attachments?: Attachment[];
+  _count?: { comments: number; attachments: number };
 }
 
 export interface Comment {
@@ -48,10 +51,20 @@ export interface Comment {
   taskId: string;
   userId: string;
   createdAt: string;
-  user: Pick<User, 'id' | 'name' | 'email'>;
+  user: Pick<User, 'id' | 'name' | 'email' | 'avatarUrl'>;
 }
 
 export interface Attachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  taskId: string;
+  createdAt: string;
+}
+
+export interface Document {
   id: string;
   fileName: string;
   fileUrl: string;

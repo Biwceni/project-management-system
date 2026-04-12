@@ -9,38 +9,38 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AttachmentsService } from './attachments.service';
+import { DocumentsService } from './documents.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   CurrentUser,
   CurrentUserPayload,
 } from '../auth/decorators/current-user.decorator';
 
-@Controller('tasks/:taskId/attachments')
+@Controller('projects/:projectId/documents')
 @UseGuards(JwtAuthGuard)
-export class AttachmentsController {
-  constructor(private readonly attachmentsService: AttachmentsService) {}
+export class DocumentsController {
+  constructor(private readonly documentsService: DocumentsService) {}
 
   @Get()
-  findAll(@Param('taskId') taskId: string) {
-    return this.attachmentsService.findAllByTask(taskId);
+  findAll(@Param('projectId') projectId: string) {
+    return this.documentsService.findAllByProject(projectId);
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   upload(
-    @Param('taskId') taskId: string,
+    @Param('projectId') projectId: string,
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.attachmentsService.upload(taskId, file, user.id);
+    return this.documentsService.upload(projectId, file, user.id);
   }
 
-  @Delete(':attachmentId')
+  @Delete(':documentId')
   remove(
-    @Param('attachmentId') attachmentId: string,
+    @Param('documentId') documentId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.attachmentsService.remove(attachmentId, user.id);
+    return this.documentsService.remove(documentId, user.id);
   }
 }

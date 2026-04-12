@@ -33,10 +33,11 @@ export class ProjectsRepository {
         tasks: {
           include: {
             assignee: { select: { id: true, name: true, email: true } },
-            _count: { select: { comments: true } },
+            _count: { select: { comments: true, attachments: true } },
           },
           orderBy: { createdAt: 'desc' },
         },
+        documents: { orderBy: { createdAt: 'desc' } },
       },
     });
   }

@@ -10,6 +10,7 @@ export class UsersRepository {
     id: true,
     email: true,
     name: true,
+    avatarUrl: true,
     createdAt: true,
   };
 

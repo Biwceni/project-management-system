@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, MessageSquare, User as UserIcon } from 'lucide-react';
+import { MessageSquare, User as UserIcon } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@/types';
 import { taskService } from '../services/taskService';
 
@@ -55,15 +55,24 @@ export function KanbanBoard({ tasks, onTaskClick, onTaskUpdated }: KanbanBoardPr
     }
   }, [tasks, onTaskUpdated]);
 
+  const handleMobileStatusChange = useCallback(async (taskId: string, newStatus: TaskStatus) => {
+    try {
+      await taskService.update(taskId, { status: newStatus });
+      onTaskUpdated();
+    } catch {
+      toast.error('Erro ao mover tarefa');
+    }
+  }, [onTaskUpdated]);
+
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex flex-col gap-4 md:flex-row md:overflow-x-auto md:pb-4">
       {COLUMNS.map((col) => {
         const columnTasks = tasks.filter((t) => t.status === col.status);
 
         return (
           <div
             key={col.status}
-            className="w-[280px] min-w-[280px] flex-shrink-0 rounded-sm"
+            className="w-full flex-shrink-0 rounded-sm md:w-[280px] md:min-w-[280px]"
             style={{ backgroundColor: col.bg }}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, col.status)}
@@ -119,18 +128,36 @@ export function KanbanBoard({ tasks, onTaskClick, onTaskUpdated }: KanbanBoardPr
                           </span>
                         )}
                       </div>
-                      {task.assignee ? (
-                        <div
-                          className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0052cc] text-[10px] font-bold text-white"
-                          title={task.assignee.name}
+                      <div className="flex items-center gap-2">
+                        {/* Mobile status selector */}
+                        <select
+                          value={task.status}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleMobileStatusChange(task.id, e.target.value as TaskStatus);
+                          }}
+                          className="h-5 w-5 cursor-pointer appearance-none rounded-sm border border-[#dfe1e6] bg-transparent text-[0px] md:hidden"
+                          style={{ backgroundImage: 'none' }}
+                          title="Mover tarefa"
                         >
-                          {task.assignee.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </div>
-                      ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-[#dfe1e6]">
-                          <UserIcon className="h-3 w-3 text-[#c1c7d0]" />
-                        </div>
-                      )}
+                          {COLUMNS.map((c) => (
+                            <option key={c.status} value={c.status}>{c.label}</option>
+                          ))}
+                        </select>
+                        {task.assignee ? (
+                          <div
+                            className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0052cc] text-[10px] font-bold text-white"
+                            title={task.assignee.name}
+                          >
+                            {task.assignee.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                          </div>
+                        ) : (
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-[#dfe1e6]">
+                            <UserIcon className="h-3 w-3 text-[#c1c7d0]" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

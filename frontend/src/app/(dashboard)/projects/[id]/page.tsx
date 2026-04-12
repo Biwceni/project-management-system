@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Settings, Trash2, ArrowLeft, Users, LayoutGrid, Paperclip } from 'lucide-react';
+import { Settings, Trash2, ArrowLeft, Users, LayoutGrid, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,11 +20,11 @@ import { KanbanBoard } from '@/features/tasks/components/KanbanBoard';
 import { CreateTaskDialog } from '@/features/tasks/components/CreateTaskDialog';
 import { TaskDetailPanel } from '@/features/tasks/components/TaskDetailPanel';
 import { MembersPanel } from '@/features/projects/components/MembersPanel';
-import { AttachmentsPanel } from '@/features/projects/components/AttachmentsPanel';
+import { DocumentsPanel } from '@/features/projects/components/DocumentsPanel';
 import { projectService } from '@/features/projects/services/projectService';
 import { Task } from '@/types';
 
-type Tab = 'board' | 'members' | 'attachments' | 'settings';
+type Tab = 'board' | 'members' | 'documents' | 'settings';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -84,11 +84,11 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'board', label: 'Board', icon: LayoutGrid },
-    { key: 'members', label: 'Membros', icon: Users },
-    { key: 'attachments', label: 'Arquivos', icon: Paperclip },
-    { key: 'settings', label: 'Configurações', icon: Settings },
+  const tabs: { key: Tab; label: string; shortLabel: string; icon: React.ElementType }[] = [
+    { key: 'board', label: 'Board', shortLabel: 'Board', icon: LayoutGrid },
+    { key: 'members', label: 'Membros', shortLabel: 'Membros', icon: Users },
+    { key: 'documents', label: 'Documentos', shortLabel: 'Docs', icon: FileText },
+    { key: 'settings', label: 'Configurações', shortLabel: 'Config', icon: Settings },
   ];
 
   return (
@@ -101,33 +101,36 @@ export default function ProjectDetailPage() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="flex h-8 w-8 items-center justify-center rounded bg-[#deebff] text-xs font-bold text-[#0052cc]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#deebff] text-xs font-bold text-[#0052cc]">
           {project.key || project.name.slice(0, 2).toUpperCase()}
         </div>
-        <div>
-          <h1 className="text-lg font-bold text-[#172b4d]">{project.name}</h1>
+        <div className="min-w-0">
+          <h1 className="truncate text-base font-bold text-[#172b4d] sm:text-lg">{project.name}</h1>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0 border-b border-[#dfe1e6]">
-        {tabs.map((t) => {
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-                tab === t.key
-                  ? 'border-[#0052cc] text-[#0052cc]'
-                  : 'border-transparent text-[#6b778c] hover:text-[#172b4d]'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {t.label}
-            </button>
-          );
-        })}
+      <div className="-mx-4 overflow-x-auto border-b border-[#dfe1e6] px-4 md:-mx-0 md:px-0">
+        <div className="flex items-center gap-0">
+          {tabs.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex shrink-0 items-center gap-1 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors sm:gap-1.5 sm:px-4 sm:text-sm ${
+                  tab === t.key
+                    ? 'border-[#0052cc] text-[#0052cc]'
+                    : 'border-transparent text-[#6b778c] hover:text-[#172b4d]'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="sm:hidden">{t.shortLabel}</span>
+                <span className="hidden sm:inline">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Tab Content */}
@@ -161,13 +164,13 @@ export default function ProjectDetailPage() {
           />
         )}
 
-        {tab === 'attachments' && (
-          <AttachmentsPanel projectId={id} />
+        {tab === 'documents' && (
+          <DocumentsPanel projectId={id} />
         )}
 
         {tab === 'settings' && (
-          <div className="max-w-lg space-y-6">
-            <div className="rounded-sm border border-[#dfe1e6] bg-white p-5">
+          <div className="space-y-6">
+            <div className="rounded-sm border border-[#dfe1e6] bg-white p-4 sm:p-5">
               <h3 className="text-base font-semibold text-[#172b4d]">Informações do Projeto</h3>
               <p className="mt-1 text-sm text-[#6b778c]">{project.description || 'Sem descrição'}</p>
               <p className="mt-2 text-xs text-[#6b778c]">
@@ -176,7 +179,7 @@ export default function ProjectDetailPage() {
               <p className="text-xs text-[#6b778c]">
                 Dono: <span className="font-semibold text-[#172b4d]">{project.owner?.name}</span>
               </p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" onClick={openEditDialog}>
                   Editar
                 </Button>
